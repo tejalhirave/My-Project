@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-key="pageTitle">Warden Dashboard - Hostel Management</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f4f6f9; margin:0; padding:0; }
+header { background: #2c3e50; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+header h1 { margin:0; font-size:20px; }
+header button { background: #e74c3c; border:none; padding:8px 16px; color:white; border-radius:5px; cursor:pointer; }
+.cards-container { display:flex; flex-wrap:wrap; gap:20px; padding:20px; }
+.card { flex:1 1 calc(25% - 20px); background:white; padding:20px; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-align:center; cursor:pointer; transition:0.3s; }
+.card:hover { background:#3498db; color:white; transform:translateY(-5px); }
+#sectionContainer { background:white; margin:20px; padding:20px; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
+textarea, input { width:90%; padding:8px; margin:8px 0; }
+button { background:#3498db; color:white; border:none; padding:8px 14px; border-radius:5px; cursor:pointer; margin:3px; }
+button:hover { background:#2980b9; }
+.room-item, .announcement-item, .student-item, .complaint-item, .notification-item { margin:10px 0; padding:10px; border-bottom:1px solid #ccc; }
+.student-profile { border:1px solid #ddd; padding:15px; margin-top:10px; border-radius:5px; background:#f9f9f9; }
+</style>
+</head>
+<body>
+<div class="dashboard-container">
+<header>
+<h1 data-key="welcome">Welcome, Warden</h1>
+<button id="logoutBtn" data-key="logout">Logout</button>
+</header>
+
+<div class="cards-container">
+<div class="card" onclick="openSection('announcement')"><h2 data-key="announcements">Announcements</h2><p data-key="announcementsDesc">Post / Remove announcements.</p></div>
+<div class="card" onclick="openSection('complaints')"><h2 data-key="complaints">Complaints</h2><p data-key="complaintsDesc">View student complaints.</p></div>
+<div class="card" onclick="openSection('admissions')"><h2 data-key="admissions">Admissions</h2><p data-key="admissionsDesc">Manage student admissions.</p></div>
+<div class="card" onclick="openSection('applications')"><h2 data-key="applications">Applications</h2><p data-key="applicationsDesc">Approve/Reject & Remove applications.</p></div>
+<div class="card" onclick="openSection('rooms')"><h2 data-key="rooms">Rooms</h2><p data-key="roomsDesc">Manage rooms, vacancies & floors.</p></div>
+<div class="card" onclick="openSection('floorNotes')"><h2 data-key="floorNotes">Floor Notes</h2><p data-key="floorNotesDesc">Write notes for students selecting rooms.</p></div>
+</div>
+
+<div id="sectionContainer"></div>
+</div>
+
+<script>
+// --- Translation dictionary ---
+const translations = {
+  en: {
+    pageTitle: "Warden Dashboard - Hostel Management",
+    welcome: "Welcome, Warden",
+    logout: "Logout",
+    announcements: "Announcements",
+    announcementsDesc: "Post / Remove announcements.",
+    complaints: "Complaints",
+    complaintsDesc: "View student complaints.",
+    admissions: "Admissions",
+    admissionsDesc: "Manage student admissions.",
+    applications: "Applications",
+    applicationsDesc: "Approve/Reject & Remove applications.",
+    rooms: "Rooms",
+    roomsDesc: "Manage rooms, vacancies & floors.",
+    floorNotes: "Floor Notes",
+    floorNotesDesc: "Write notes for students selecting rooms.",
+    postAnnouncementAlert: "Please write an announcement!",
+    floorNoteSaved: "Floor note saved!"
+  },
+  mr: {
+    pageTitle: "वार्डन डॅशबोर्ड - हौस्टेल व्यवस्थापन",
+    welcome: "स्वागत आहे, वार्डन",
+    logout: "लॉगआऊट",
+    announcements: "जाहीराती",
+    announcementsDesc: "जाहीराती पोस्ट / हटवा.",
+    complaints: "तक्रारी",
+    complaintsDesc: "विद्यार्थी तक्रारी पहा.",
+    admissions: "प्रवेश",
+    admissionsDesc: "विद्यार्थी प्रवेश व्यवस्थापित करा.",
+    applications: "अर्ज",
+    applicationsDesc: "अप्रूव्ह/रिजेक्ट & हटवा.",
+    rooms: "रूम्स",
+    roomsDesc: "रूम्स, रिक्तता & मजले व्यवस्थापित करा.",
+    floorNotes: "मजला नोट्स",
+    floorNotesDesc: "विद्यार्थी रूम निवडताना नोट्स लिहा.",
+    postAnnouncementAlert: "कृपया जाहीरात लिहा!",
+    floorNoteSaved: "मजला नोट जतन केला!"
+  },
+  hi: {
+    pageTitle: "वार्डन डैशबोर्ड - हॉस्टल प्रबंधन",
+    welcome: "स्वागत है, वार्डन",
+    logout: "लॉगआउट",
+    announcements: "घोषणाएँ",
+    announcementsDesc: "घोषणाएँ पोस्ट / हटाएँ।",
+    complaints: "शिकायतें",
+    complaintsDesc: "छात्र शिकायतें देखें।",
+    admissions: "प्रवेश",
+    admissionsDesc: "छात्र प्रवेश प्रबंधित करें।",
+    applications: "आवेदन",
+    applicationsDesc: "स्वीकृत / अस्वीकार करें और हटाएँ।",
+    rooms: "कक्ष",
+    roomsDesc: "कक्ष, रिक्तियां और मंजिल प्रबंधित करें।",
+    floorNotes: "मंजिल नोट्स",
+    floorNotesDesc: "छात्र रूम चुनते समय नोट लिखें।",
+    postAnnouncementAlert: "कृपया घोषणा लिखें!",
+    floorNoteSaved: "मंजिल नोट सहेजा गया!"
+  }
+};
+
+// --- Apply language from localStorage ---
+window.onload = () => {
+  const lang = localStorage.getItem('selectedLanguage') || 'en';
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const key = el.getAttribute('data-key');
+    el.innerText = translations[lang][key] || el.innerText;
+  });
+  document.title = translations[lang].pageTitle;
+};
+
+// --- Logout ---
+document.getElementById("logoutBtn").addEventListener("click",()=>{window.location.href="login.html";});
+
+// --- Open Sections ---
+function openSection(section){
+    const lang = localStorage.getItem('selectedLanguage') || 'en';
+    const container = document.getElementById("sectionContainer");
+    container.innerHTML = "";
+
+    if(section === "announcement"){
+        container.innerHTML = `
+            <h2>${translations[lang].announcements}</h2>
+            <textarea id="announcementText" placeholder="Write announcement..."></textarea><br>
+            <button onclick="postAnnouncement()">${translations[lang].announcements}</button>
+            <div id="announcementList"></div>
+        `;
+        loadAnnouncements();
+    }
+    else if(section === "complaints"){
+        container.innerHTML = `
+            <h2>${translations[lang].complaints}</h2>
+            <div class="complaint-item">Complaint 1: Water issue</div>
+            <div class="complaint-item">Complaint 2: Mess food quality</div>
+        `;
+    }
+    else if(section === "admissions"){
+        container.innerHTML = `
+            <h2>${translations[lang].admissions}</h2>
+            <p>Manage student admissions here. (Placeholder)</p>
+        `;
+    }
+    else if(section === "applications"){
+        container.innerHTML = `
+            <h2>${translations[lang].applications}</h2>
+            <p>Approve or reject student applications here. (Placeholder)</p>
+        `;
+    }
+    else if(section === "rooms"){
+        container.innerHTML = `
+            <h2>${translations[lang].rooms}</h2>
+            <div class="room-item">Room 101 - Vacant <input type="text" placeholder="Assign student"></div>
+            <div class="room-item">Room 102 - Occupied</div>
+        `;
+    }
+    else if(section === "floorNotes"){
+        container.innerHTML = `
+            <h2>${translations[lang].floorNotes}</h2>
+            <textarea id="floorNoteInput" placeholder="Write floor note..."></textarea><br>
+            <button onclick="saveFloorNote()">Save</button>
+        `;
+    }
+}
+
+// --- Announcements ---
+function postAnnouncement(){
+    const text=document.getElementById("announcementText").value;
+    const lang = localStorage.getItem('selectedLanguage') || 'en';
+    if(!text) return alert(translations[lang].postAnnouncementAlert);
+    let announcements=JSON.parse(localStorage.getItem("announcements"))||[];
+    announcements.push(text);
+    localStorage.setItem("announcements",JSON.stringify(announcements));
+    openSection('announcement');
+}
+
+function loadAnnouncements(){
+    let announcements=JSON.parse(localStorage.getItem("announcements"))||[];
+    let list=document.getElementById("announcementList");
+    if(list){
+        list.innerHTML="";
+        announcements.forEach((a,i)=>{
+            list.innerHTML+=`<div class="announcement-item">${a} 
+                <button onclick="deleteAnnouncement(${i})">Delete</button>
+            </div>`;
+        });
+    }
+}
+
+function deleteAnnouncement(i){
+    let announcements=JSON.parse(localStorage.getItem("announcements"))||[];
+    announcements.splice(i,1);
+    localStorage.setItem("announcements",JSON.stringify(announcements));
+    openSection('announcement');
+}
+
+// --- Floor Notes ---
+function saveFloorNote(){
+    const note=document.getElementById("floorNoteInput").value;
+    const lang = localStorage.getItem('selectedLanguage') || 'en';
+    localStorage.setItem("floorNote",note);
+    alert(translations[lang].floorNoteSaved);
+}
+</script>
+</body>
+</html>

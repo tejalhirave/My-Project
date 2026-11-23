@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title data-key="pageTitle">Login Page</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="login-container">
+  <!-- Language Selection -->
+  <div class="language-selection">
+    <label><input type="radio" name="lang" value="en" checked /> English</label>
+    <label><input type="radio" name="lang" value="mr" /> Marathi</label>
+    <label><input type="radio" name="lang" value="hi" /> Hindi</label>
+  </div>
+
+  <!-- User Icon -->
+  <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="User Icon" width="100" />
+
+  <!-- Role Selection -->
+  <div class="role-selection">
+    <label><input type="radio" name="role" value="student" checked /> <span data-key="studentRole">Student</span></label>
+    <label><input type="radio" name="role" value="warden" /> <span data-key="wardenRole">Warden</span></label>
+  </div>
+
+  <!-- Login Form -->
+  <form id="loginForm">
+    <div class="input-group username">
+      <input type="text" name="username" data-key-placeholder="username" placeholder="Username" required />
+    </div>
+    <div class="input-group password">
+      <input type="password" name="password" data-key-placeholder="password" placeholder="Password" required />
+    </div>
+
+    <div class="options">
+      <label><input type="checkbox" name="remember" /> <span data-key="remember">Remember me</span></label>
+      <a href="#" data-key="forgot">Forgot Password?</a>
+    </div>
+
+    <button type="submit" data-key="signin">SIGN IN</button>
+  </form>
+
+  <div class="register-link">
+    <span data-key="registerText">Don’t have an account?</span> <a href="register.html" data-key="registerLink">Register here</a>
+  </div>
+</div>
+
+<script>
+const translations = {
+  en: {
+    pageTitle: "Login Page",
+    studentRole: "Student",
+    wardenRole: "Warden",
+    username: "Username",
+    password: "Password",
+    remember: "Remember me",
+    forgot: "Forgot Password?",
+    signin: "SIGN IN",
+    registerText: "Don’t have an account?",
+    registerLink: "Register here"
+  },
+  mr: {
+    pageTitle: "लॉगिन पृष्ठ",
+    studentRole: "विद्यार्थी",
+    wardenRole: "वार्डन",
+    username: "वापरकर्त्याचे नाव",
+    password: "पासवर्ड",
+    remember: "माझे लक्ष ठेवा",
+    forgot: "पासवर्ड विसरलात?",
+    signin: "साइन इन करा",
+    registerText: "खाते नाही का?",
+    registerLink: "येथे नोंदणी करा"
+  },
+  hi: {
+    pageTitle: "लॉगिन पृष्ठ",
+    studentRole: "छात्र",
+    wardenRole: "वार्डन",
+    username: "उपयोगकर्ता नाम",
+    password: "पासवर्ड",
+    remember: "मुझे याद रखें",
+    forgot: "पासवर्ड भूल गए?",
+    signin: "साइन इन करें",
+    registerText: "खाता नहीं है?",
+    registerLink: "यहाँ पंजीकरण करें"
+  }
+};
+
+// Apply selected language
+function applyLanguage(lang) {
+  localStorage.setItem('selectedLanguage', lang);
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const key = el.getAttribute('data-key');
+    if(translations[lang][key]) el.innerText = translations[lang][key];
+  });
+  document.querySelectorAll('[data-key-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-key-placeholder');
+    if(translations[lang][key]) el.placeholder = translations[lang][key];
+  });
+  document.title = translations[lang].pageTitle;
+}
+
+// On page load: check stored language
+window.onload = () => {
+  const lang = localStorage.getItem('selectedLanguage') || 'en';
+  document.querySelector(`input[name="lang"][value="${lang}"]`).checked = true;
+  applyLanguage(lang);
+};
+
+// Language change event
+document.querySelectorAll('input[name="lang"]').forEach(radio => {
+  radio.addEventListener('change', e => applyLanguage(e.target.value));
+});
+
+// Login submit
+document.getElementById("loginForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const role = document.querySelector('input[name="role"]:checked').value;
+  const lang = localStorage.getItem('selectedLanguage') || 'en';
+
+  if(role === "student") {
+    window.location.href = "dashboard.html";
+  } else if(role === "warden") {
+    window.location.href = "warden_dashboard.html";
+  }
+});
+</script>
+
+</body>
+</html>
